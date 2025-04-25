@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DrPill Client</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>🩺 DrPill 클라이언트</h1>
+  <video id="video" autoplay muted playsinline style="display:none;"></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <p>서버에 영상 전송 중...</p>
+
+  <script>
+    const socket = io();
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let streaming = false;
+
+    socket.on("start_video", () => {
+      console.log("▶️ 영상 시작 명령 수신");
+      startCamera();
+    });
+
+    socket.on("stop_video", () => {
+      console.log("⏹️ 영상 중단 명령 수신");
+      streaming = false;
+    });
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+          video.play();
+          streaming = true;
+
+          setInterval(() => {
+            if (!streaming) return;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            const data = canvas.toDataURL('image/jpeg').split(',')[1];
+            socket.emit("video_frame", data);
+          }, 200); // 5 FPS
+        })
+        .catch(err => console.error("카메라 접근 실패:", err));
+    }
+  </script>
+</body>
+</html>

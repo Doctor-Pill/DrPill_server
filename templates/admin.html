@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>DrPill 관리자</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body { font-family: sans-serif; }
+    #log_list {
+      padding: 10px; height: 200px;
+      overflow-y: scroll; font-family: monospace;
+      font-size: 0.9em; border: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>DrPill 관리자</h1>
+
+  <div id="admin_controls">
+    <button onclick="socket.emit('start_video')">▶️ 영상 시작</button>
+    <button onclick="socket.emit('stop_video')">⏹️ 영상 종료</button>
+  </div>
+
+  <h2>📷 실시간 영상</h2>
+  <img id="camera_feed" width="640" height="480" />
+
+  <h2>📝 통신 로그</h2>
+  <ul id="log_list"></ul>
+
+  <script>
+    const socket = io("http://192.168.0.10:5000");
+
+    socket.on("connect", () => {
+      console.log("✅ 서버 연결됨");
+      log("✅ 서버 연결됨");
+    });
+
+    socket.on("log_message", msg => {
+      log(msg);
+    });
+
+    socket.on("video_frame", data => {
+      document.getElementById("camera_feed").src = 'data:image/jpeg;base64,' + data;
+    });
+
+    socket.on("connect_error", err => {
+      console.error("❌ 소켓 연결 오류:", err);
+    });
+
+    socket.onAny((event, ...args) => {
+      console.log(`📡 이벤트 수신: ${event}`, args);
+    });
+
+    function log(message) {
+      const logList = document.getElementById("log_list");
+      const item = document.createElement("li");
+      item.textContent = message;
+      logList.appendChild(item);
+      logList.scrollTop = logList.scrollHeight;
+    }
+  </script>
+</body>
+</html>
