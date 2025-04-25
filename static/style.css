@@ -1,0 +1,40 @@
+/* 📍 DRPILL_SERVER/static/style.css */
+
+/* 기본 폰트 및 중앙 정렬 */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+    background-color: #f7f7f7;
+}
+
+/* 버튼 스타일 */
+.button-group button {
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.button-group button:hover {
+    background-color: #45a049;
+}
+
+/* 로그 영역 스타일 */
+#logs {
+    margin-top: 20px;
+    padding: 10px;
+    text-align: left;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 300px;
+    overflow-y: scroll;
+}

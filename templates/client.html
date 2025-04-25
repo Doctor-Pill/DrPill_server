@@ -1,51 +1,33 @@
+<!-- 📍 DRPILL_SERVER/templates/client.html -->
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <title>DrPill Client</title>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <meta charset="UTF-8">
+    <title>DrPill Client</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
 </head>
 <body>
-  <h1>🩺 DrPill 클라이언트</h1>
-  <video id="video" autoplay muted playsinline style="display:none;"></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <p>서버에 영상 전송 중...</p>
+    <h1>📺 DrPill 클라이언트 화면</h1>
 
-  <script>
-    const socket = io();
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    <div id="video-area">
+        <p>🔄 스트리밍을 시작하면 영상이 표시됩니다</p>
+    </div>
 
-    let streaming = false;
+    <script>
+        const socket = io();
 
-    socket.on("start_video", () => {
-      console.log("▶️ 영상 시작 명령 수신");
-      startCamera();
-    });
+        socket.on('start_video', () => {
+            console.log("▶️ 서버로부터 start_video 명령 수신됨");
+            // 필요한 경우, 추가로 스트림 시작에 대한 UI 갱신 가능
+        });
 
-    socket.on("stop_video", () => {
-      console.log("⏹️ 영상 중단 명령 수신");
-      streaming = false;
-    });
+        socket.on('stop_video', () => {
+            console.log("⏹️ 서버로부터 stop_video 명령 수신됨");
+            // 필요한 경우, 스트림 중단에 대한 UI 처리 가능
+        });
 
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          video.srcObject = stream;
-          video.play();
-          streaming = true;
-
-          setInterval(() => {
-            if (!streaming) return;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-            const data = canvas.toDataURL('image/jpeg').split(',')[1];
-            socket.emit("video_frame", data);
-          }, 200); // 5 FPS
-        })
-        .catch(err => console.error("카메라 접근 실패:", err));
-    }
-  </script>
+        // (추후) 영상 프레임 직접 수신해서 <canvas> 등에 띄울 수도 있음
+    </script>
 </body>
 </html>

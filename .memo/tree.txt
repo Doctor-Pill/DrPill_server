@@ -1,0 +1,30 @@
+DRPILL_SERVER/
+├── app.py                 # Flask + SocketIO 객체 정의
+├── main.py                # 메인 실행 파일
+├── requirements.txt
+├── src/
+│   ├── config/
+│   │   └── settings.py     # 설정값 (IP, 포트, 명령어 등)
+│   └── stream/
+│       ├── socket_events.py  # WebSocket 이벤트 처리
+│       ├── receiver.py       # ffplay 수신기 관리
+│       └── startup.py        # 브라우저 자동 실행 및 종료
+├── templates/
+│   ├── admin.html          # 관리자 페이지
+│   └── client.html         # 클라이언트 페이지
+└── static/
+    └── style.css           # (선택사항) 스타일 파일
+
+
+DRPILL_EDGE/
+├── main.py               # 메인 실행 파일 (엣지)
+├── requirements.txt
+└── src/
+    ├── config/
+    │   └── settings.py    # 설정 (서버 주소, 포트 등)
+    └── edge/
+        ├── socket_client.py # 서버로 WebSocket 연결 + 명령 수신
+        └── camera_controller.py # ffmpeg 스트리밍 시작/중지 관리
+
+
+
