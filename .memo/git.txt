@@ -1,6 +1,6 @@
 rm -rf .git
 git init
-git remote add origin https://github.com/doctor-pill/DrPill_server.git
+git remote add origin https://github.com/Doctor-Pill/DrPill_server.git
 git add .
 git commit -m "init"
 git push -u origin main
