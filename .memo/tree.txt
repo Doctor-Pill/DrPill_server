@@ -25,6 +25,3 @@ DRPILL_EDGE/
     └── edge/
         ├── socket_client.py # 서버로 WebSocket 연결 + 명령 수신
         └── camera_controller.py # ffmpeg 스트리밍 시작/중지 관리
-
-
-

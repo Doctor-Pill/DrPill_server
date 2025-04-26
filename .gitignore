@@ -1,2 +1,57 @@
+# Python 기본
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# 환경파일
+.env
+*.env
+
+# 가상환경 폴더
 .venv/
 venv/
+ENV/
+env/
+
+# Conda 환경
+*.conda
+*.ipynb_checkpoints
+
+# VSCode 설정 파일
+.vscode/
+
+# 운영체제별
+.DS_Store          # macOS
+Thumbs.db          # Windows
+
+# 로그 및 임시 파일
+*.log
+*.tmp
+*.bak
+
+# 빌드/배포 결과물
+build/
+dist/
+*.egg-info/
+
+# SSH 키/보안 관련 파일
+*.pem
+*.key
+
+# 서버 구동 관련
+*.pid
+
+# 크롬, ffmpeg 임시파일 (스트리밍 쪽)
+*.mp4
+*.ts
+*.mkv
+*.avi
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# 개인 설정 파일
+*.swp
+*~
