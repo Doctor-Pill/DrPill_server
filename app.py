@@ -17,30 +17,3 @@ def admin():
 @app.route('/client')
 def client():
     return render_template('client.html')
-
-# ✅ 스트림 라우트 추가
-@app.route('/stream')
-def stream():
-    """
-    UDP 스트림을 받아서 MJPEG로 브라우저에 중계
-    """
-    def generate():
-        cap = cv2.VideoCapture('udp://0.0.0.0:5000', cv2.CAP_FFMPEG)
-
-        while True:
-            success, frame = cap.read()
-            if not success:
-                continue
-
-            # 프레임을 JPEG 인코딩
-            ret, buffer = cv2.imencode('.jpg', frame)
-            if not ret:
-                continue
-
-            # MJPEG 포맷으로 반환
-            frame_bytes = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-    return Response(generate(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')

@@ -7,3 +7,24 @@ git push -u origin main
 
 # 
 git remote remove origin
+
+#
+git push -u origin main --force
+
+## 
+git pull --rebase
+
+# 로컬 변경사항을 다 날리고, 강제 pull (완전 클린)
+git fetch --all
+git reset --hard origin/main
+
+# 문제 되는 파일만 삭제
+rm reqiurements.txt
+git pull --rebase
+
+
+#
+git commit --amend -m "새로운 커밋 메시지"
+
+git log
+git log --oneline

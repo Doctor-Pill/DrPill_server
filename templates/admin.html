@@ -1,4 +1,3 @@
-<!-- 📍 DRPILL_SERVER/templates/admin.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,8 +10,11 @@
     <h1>👨‍⚕️ DrPill Admin 제어화면</h1>
 
     <div class="button-group">
-        <button id="startBtn">📸 카메라 시작</button>
-        <button id="stopBtn">🛑 카메라 중지</button>
+        <button onclick="sendCommand('open_browser')">🌐 엣지 브라우저 열기</button>
+        <button onclick="sendCommand('close_browser')">❎ 엣지 브라우저 닫기</button>
+        <button onclick="sendCommand('start_usb_streaming')">📸 USB캠 스트리밍 시작</button>
+        <button onclick="sendCommand('start_picam_streaming')">📸 PiCam 스트리밍 시작</button>
+        <button onclick="sendCommand('stop_streaming')">🛑 스트리밍 중단</button>
     </div>
 
     <div id="logs"></div>
@@ -20,21 +22,17 @@
     <script>
         const socket = io();
 
-        // 버튼 클릭 시 서버에 start_video, stop_video 이벤트 전송
-        document.getElementById('startBtn').addEventListener('click', () => {
-            socket.emit('start_video');
-        });
+        function sendCommand(command) {
+            console.log(`➡️ 서버에 명령 전송: ${command}`);
+            socket.emit('admin_command', {command});
+        }
 
-        document.getElementById('stopBtn').addEventListener('click', () => {
-            socket.emit('stop_video');
-        });
-
-        // 서버로부터 로그 메세지 수신
         socket.on('log_message', (msg) => {
             const logs = document.getElementById('logs');
             const p = document.createElement('p');
             p.textContent = msg;
             logs.appendChild(p);
+            logs.scrollTop = logs.scrollHeight;
         });
     </script>
 </body>
