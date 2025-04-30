@@ -33,3 +33,6 @@ FFPLAY_CMD = [
     '-strict', 'experimental',
     f'udp://0.0.0.0:{UDP_STREAM_PORT}'
 ]
+
+# 스트림 URL 설정
+MJPEG_STREAM_URL = "http://192.168.0.50:8000/stream.mjpg"  # 실제 라즈베리파이 IP로 변경

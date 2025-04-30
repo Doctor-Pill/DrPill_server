@@ -10,4 +10,3 @@ def admin_page():
 @app.route('/client')
 def client_page():
     return render_template('client.html')
-v
