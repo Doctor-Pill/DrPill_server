@@ -1,11 +1,14 @@
-# 📍 DRPILL_SERVER/main.py
+# main.py
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import signal
-import sys
 import threading
 from app import app, socketio
 from src.stream.startup import startup, cleanup
-from src.stream import socket_events  # WebSocket 이벤트 등록용
+from src.stream import socket_events  # WebSocket 이벤트 등록
 
 if __name__ == "__main__":
     threading.Thread(target=startup).start()

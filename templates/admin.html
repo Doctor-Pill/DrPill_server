@@ -15,6 +15,8 @@
         <button onclick="sendCommand('start_usb_streaming')">📸 USB캠 스트리밍 시작</button>
         <button onclick="sendCommand('start_picam_streaming')">📸 PiCam 스트리밍 시작</button>
         <button onclick="sendCommand('stop_streaming')">🛑 스트리밍 중단</button>
+        <button onclick="startFaceDetection()">🧑‍💻 얼굴 인식 시작</button> <!-- 추가 -->
+        <button onclick="stopFaceDetection()">🙈 얼굴 인식 중단</button> <!-- 추가 -->
     </div>
 
     <h2>📺 실시간 영상</h2>
@@ -23,11 +25,21 @@
     <div id="logs"></div>
 
     <script>
-        const socket = io();
+        const socket = io("/admin");
 
         function sendCommand(command) {
             console.log(`➡️ 서버에 명령 전송: ${command}`);
             socket.emit('admin_command', {command});
+        }
+
+        function startFaceDetection() {
+            console.log("➡️ 얼굴 인식 시작 명령 전송");
+            socket.emit('start_face_detection');
+        }
+
+        function stopFaceDetection() {
+            console.log("➡️ 얼굴 인식 중단 명령 전송");
+            socket.emit('stop_face_detection');
         }
 
         socket.on('log_message', (msg) => {

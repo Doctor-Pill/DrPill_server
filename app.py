@@ -1,16 +1,18 @@
-# 📍 수정 추가 DRPILL_SERVER/app.py
+# app.py
 
 import numpy as np
-from flask import Flask, render_template, Response
+import cv2
+from flask import Flask, render_template
 from flask_socketio import SocketIO
 from src.config.settings import SECRET_KEY
-import cv2
+from server.frame_handler import register_frame_handler
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
-# ✅ 기본 라우트들
+register_frame_handler(socketio)
+
 @app.route('/admin')
 def admin():
     return render_template('admin.html')
@@ -22,11 +24,3 @@ def client():
 @socketio.on('connect', namespace='/client')
 def on_connect():
     print("✅ 클라이언트 연결됨 (/client)")
-
-@socketio.on('frame', namespace='/client')
-def handle_frame(data):
-    nparr = np.frombuffer(data, np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    # 확인용
-    cv2.imwrite("received.jpg", frame)
