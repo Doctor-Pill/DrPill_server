@@ -84,7 +84,7 @@ def startup():
     """
     서버 시작 시 브라우저 및 엣지 자동 실행
     """
-    time.sleep(1)
+    # time.sleep(1)
     # reset_camera_on_pi()  # 🔥 추가!
     open_admin_browser()
     # start_edge_main_on_pi()

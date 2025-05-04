@@ -2,7 +2,7 @@
 
 from flask import render_template, Response
 from app import app, socketio  # ✅ socketio 추가
-from src.stream.analyzer_runner import gen_frames
+# from src.stream.analyzer_runner import gen_frames
 from server.frame_handler import enable_face_detection  # ✅ 얼굴 인식 활성화 함수
 
 @app.route('/admin')

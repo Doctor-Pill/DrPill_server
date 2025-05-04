@@ -1,41 +1,34 @@
 from deepface import DeepFace
+import cv2
 
-# 모델별 추천 threshold
-THRESHOLDS = {
-    "VGG-Face": 0.4,
-    "Facenet": 10,
-    "Facenet512": 0.9,
-    "ArcFace": 0.68,
-    "Dlib": 0.6,
-    "SFace": 0.593
-}
-
-def identify_face(frame, db_path="data/patients", detector_backend="retinaface", model_name="Facenet"):
-    """
-    입력 프레임에서 얼굴을 감지하고, 등록된 얼굴과 충분히 유사한 경우에만 이름 반환
-    """
-    threshold = THRESHOLDS.get(model_name, 0.5)
-
+def identify_face_from_bbox(frame, bbox):
     try:
-        results = DeepFace.find(
-            img_path=frame,
-            db_path=db_path,
-            detector_backend=detector_backend,
-            model_name=model_name,
+        height, width = frame.shape[:2]
+        x, y, w, h = bbox
+        x = max(0, x)
+        y = max(0, y)
+        x2 = min(width, x + w)
+        y2 = min(height, y + h)
+        face_crop = frame[y:y2, x:x2]
+
+        # print("📐 얼굴 크기:", face_crop.shape)
+        # cv2.imwrite("debug_face_crop.jpg", face_crop)
+
+        face_rgb = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
+
+        result = DeepFace.find(
+            img_path=face_rgb,  # ✅ 여기만 수정
+            db_path="data/patients/face",
+            model_name="Facenet512",
+            detector_backend="retinaface",
             enforce_detection=False
         )
 
-        if len(results) > 0 and not results[0].empty:
-            top_result = results[0].iloc[0]
-            distance = top_result.get("distance", 1.0)
+        print("🔍 인식 결과:", result)
 
-            if distance < threshold:
-                identity_path = top_result['identity']
-                print(f"🟢 인식 성공: 거리({distance:.3f}) <= 임계값({threshold})")
-                return identity_path.split("/")[-1].split("_")[0]
-            else:
-                print(f"🟡 인식 실패: 거리({distance:.3f}) > 임계값({threshold})")
+        if len(result) > 0 and len(result[0]) > 0:
+            identity_path = result[0].iloc[0]["identity"]
+            return identity_path.split("/")[-1].split(".")[0]
     except Exception as e:
-        print("❌ 얼굴 인식 실패:", e)
-
+        print("❌ 얼굴 인식 오류:", e)
     return None
