@@ -1,66 +1,48 @@
-# server/frame_handler.py
-
 from flask_socketio import emit
 import numpy as np
 import cv2
 import threading
 
+from app import socketio
 from analyzers.face.detection.tracker import FacePresenceTracker
 from analyzers.face.recognition.identifier import identify_face
 from analyzers.face.recognition.visualizer import draw_result
 
-# 전역 상태 변수
+# 상태 변수
 face_tracker = FacePresenceTracker(threshold_sec=1.0)
 identity_found = False
 face_detection_active = False
-streaming_active = False
-monitor_started = False  # ✅ 중복 방지
 
-def is_streaming_active():
-    return streaming_active
+latest_frame = None
+frame_lock = threading.Lock()
 
-# 🔽 스트리밍 중단 시 감지 종료 처리
-def stop_face_detection_due_to_stream_loss():
-    global face_detection_active
-    face_detection_active = False
+# 🔽 엣지에서 전송된 프레임 수신
+@socketio.on('frame', namespace='/client')
+def receive_frame(data):
+    global latest_frame
+    nparr = np.frombuffer(data, np.uint8)
+    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    try:
-        from app import socketio
-        socketio.emit('log_message', "🛑 스트리밍 중단으로 얼굴 감지 중단됨", namespace='/admin')
-    except Exception as e:
-        print("❌ 스트리밍 중단 알림 실패:", e)
+    if frame is None:
+        print("❌ 프레임 디코딩 실패")
+        return
 
-# 🔽 스트리밍 감시 스레드 실행
-def monitor_streaming():
-    global streaming_active, face_detection_active
+    with frame_lock:
+        latest_frame = frame
 
-    def check_loop():
-        while True:
-            if face_detection_active:
-                streaming_active = False  # 🔄 매 2초마다 초기화
-                threading.Event().wait(2.0)
-                if not streaming_active:
-                    stop_face_detection_due_to_stream_loss()
-            else:
-                threading.Event().wait(2.0)
 
-    threading.Thread(target=check_loop, daemon=True).start()
+# 🔽 얼굴 인식 스레드
+def face_detection_thread():
+    global identity_found, face_detection_active, latest_frame
 
-# 🔽 등록 함수
-def register_frame_handler(socketio):
-    global monitor_started
+    while face_detection_active:
+        with frame_lock:
+            if latest_frame is None:
+                continue
+            frame_copy = latest_frame.copy()
 
-    @socketio.on('frame', namespace='/client')
-    def handle_frame(data):
-        global identity_found, face_detection_active, streaming_active
-
-        streaming_active = True  # 프레임 수신 중
-        if not face_detection_active or identity_found:
-            return
-
-        nparr = np.frombuffer(data, np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        face_tracker.update(frame)
+        print("face_detection_thread")  # ✅ 수신 로그 추가
+        face_tracker.update(frame_copy)
 
         if face_tracker.is_face_persisted():
             last_frame = face_tracker.get_last_frame()
@@ -70,28 +52,34 @@ def register_frame_handler(socketio):
                 identity_found = True
                 result_frame = draw_result(last_frame, label=identity)
                 cv2.imwrite("final_identified.jpg", result_frame)
-
-                emit('identified', {'user': identity}, namespace='/client')
-                emit('log_message', f'✅ 얼굴 인식 완료: {identity}', namespace='/admin')
+                socketio.emit('identified', {'user': identity}, namespace='/client')
+                socketio.emit('log_message', f'✅ 얼굴 인식 완료: {identity}', namespace='/admin')
+                stop_face_detection()
+                break
             else:
-                emit('log_message', "❌ 얼굴은 있었지만 식별 실패", namespace='/admin')
+                socketio.emit('log_message', "❌ 얼굴은 있었지만 식별 실패", namespace='/admin')
+                stop_face_detection()
+                break
         else:
-            emit('log_message', "⏳ 얼굴 감지 중...", namespace='/admin')
+            socketio.emit('log_message', "⏳ 얼굴 감지 중...", namespace='/admin')
 
-    @socketio.on('start_face_detection', namespace='/admin')
-    def start_face_detection():
-        global identity_found, face_detection_active
-        identity_found = False
-        face_detection_active = True
-        emit('log_message', "🟢 얼굴 감지 시작됨", namespace='/admin')
+# 🔽 얼굴 인식 시작
+@socketio.on('start_face_detection', namespace='/admin')
+def start_face_detection():
+    global face_detection_active, identity_found
+    face_detection_active = True
+    identity_found = False
 
-    @socketio.on('stop_face_detection', namespace='/admin')
-    def stop_face_detection():
-        global face_detection_active
-        face_detection_active = False
-        emit('log_message', "🔴 얼굴 감지 중단됨", namespace='/admin')
+    socketio.emit('log_message', "🟢 얼굴 인식 시작됨 → 엣지에 카메라 요청", namespace='/admin')
+    socketio.emit('edge_command', {"command": "start_usb_streaming"}, namespace='/admin')
 
-    # ✅ 스트리밍 모니터는 최초 한 번만 실행
-    if not monitor_started:
-        monitor_streaming()
-        monitor_started = True
+    threading.Thread(target=face_detection_thread, daemon=True).start()
+
+# 🔽 얼굴 인식 중단
+@socketio.on('stop_face_detection', namespace='/admin')
+def stop_face_detection():
+    global face_detection_active
+    face_detection_active = False
+
+    socketio.emit('edge_command', {"command": "stop_streaming"}, namespace='/admin')
+    socketio.emit('log_message', "🔴 얼굴 감지 중단됨 → 엣지에 스트리밍 중단 요청", namespace='/admin')
