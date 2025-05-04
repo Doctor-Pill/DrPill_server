@@ -1,6 +1,6 @@
 {
-    "name": "홍길동",
-    "age": 74,
+    "name": "한용만",
+    "age": 24,
     "sex": "남성",
     "patient_id": "patient_001",
     "prescriptions": [

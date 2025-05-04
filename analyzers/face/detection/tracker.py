@@ -1,41 +1,47 @@
-# src/analyzers/face/detection/tracker.py
-
-import time
 import cv2
+import time
 
 class FacePresenceTracker:
-    def __init__(self, detector_backend="retinaface", threshold_sec=1.0):
-        self.detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        self.detector_backend = detector_backend  # 사용하지 않지만 호환성 위해 유지
+    def __init__(self, threshold_sec=1.0):
         self.threshold_sec = threshold_sec
         self.start_time = None
-        self.last_frame_with_face = None
+        self.last_frame = None
+        self.last_bbox = None
 
-    def detect_faces(self, frame):
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = self.detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
-        return faces
+    def __str__(self):
+        return (
+            f"[FacePresenceTracker]\n"
+            f"  threshold_sec: {self.threshold_sec}\n"
+            f"  start_time: {self.start_time}\n"
+            f"  last_bbox: {self.last_bbox}\n"
+            f"  has_frame: {self.last_frame is not None}"
+        )
 
     def update(self, frame):
-        faces = self.detect_faces(frame)
-        has_face = len(faces) > 0
+        # OpenCV 얼굴 감지기 (Haar Cascade 예시)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
 
-        now = time.time()
-
-        if has_face:
+        if len(faces) > 0:
+            self.last_frame = frame.copy()
+            self.last_bbox = faces[0]  # 첫 번째 얼굴만 사용
             if self.start_time is None:
-                self.start_time = now
-            self.last_frame_with_face = frame
+                self.start_time = time.time()
         else:
             self.start_time = None
-            self.last_frame_with_face = None
-
-        return has_face
+            self.last_bbox = None
 
     def is_face_persisted(self):
-        if self.start_time is None:
-            return False
-        return time.time() - self.start_time >= self.threshold_sec
+        return self.start_time is not None and (time.time() - self.start_time) >= self.threshold_sec
 
     def get_last_frame(self):
-        return self.last_frame_with_face
+        return self.last_frame
+
+    def get_last_bbox(self):
+        return self.last_bbox
+
+    def reset(self):
+        self.start_time = None
+        self.last_frame = None
+        self.last_bbox = None

@@ -43,7 +43,7 @@
         }
 
         socket.on('log_message', (msg) => {
-            print(msg)
+            console.log(msg);
             const logs = document.getElementById('logs');
             const p = document.createElement('p');
             p.textContent = msg;
