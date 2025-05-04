@@ -8,7 +8,8 @@ from flask_socketio import emit
 from app import socketio
 from analyzers.face.detection.tracker import FacePresenceTracker
 from analyzers.face.recognition.identifier import identify_face_from_bbox
-from analyzers.face.recognition.visualizer import draw_result
+from analyzers.face.recognition.visualizer import draw_result, save_face_clip
+
 
 # ----------------------------- 상태 변수 ----------------------------- #
 face_tracker = FacePresenceTracker()
@@ -19,6 +20,7 @@ frame_lock = threading.Lock()
 video_seconds = 6
 video_fps = 10
 frame_queue = deque(maxlen=video_seconds * video_fps)
+bbox_queue = deque(maxlen=video_seconds * video_fps)
 
 # ----------------------------- 프레임 수신 ----------------------------- #
 @socketio.on('frame', namespace='/client')
@@ -34,14 +36,18 @@ def receive_frame(data):
     with frame_lock:
         latest_frame = frame
         frame_queue.append(frame.copy())
+        # 👇 이 부분 제거해보세요
+        # face_tracker.update(frame)
+        # bbox = face_tracker.get_last_bbox()
+        # bbox_queue.append(bbox if bbox else None)
+
 
 # ----------------------------- 얼굴 인식 스레드 ----------------------------- #
 def face_detection_thread():
     global face_detection_active
 
-    socketio.emit('log_message', "🟡 얼굴 인식 시작됨", namespace='/admin')
-
     while face_detection_active:
+        print("얼굴 대기 중")
         with frame_lock:
             if latest_frame is None:
                 continue
@@ -50,6 +56,11 @@ def face_detection_thread():
         face_tracker.update(frame_copy)
         bbox = face_tracker.get_last_bbox()
         frame = face_tracker.get_last_frame()
+
+        if bbox:
+            bbox_queue.append(bbox)
+        else:
+            bbox_queue.append(None)
 
         if bbox is None or frame is None:
             continue
@@ -61,12 +72,29 @@ def face_detection_thread():
         print(frame, bbox, identity)
         result_frame = draw_result(frame.copy(), label=identity, bbox=bbox)
         cv2.imwrite("final_identified.jpg", result_frame)
+        
+        
+        # 🧠 결과 나온 시점에 저장할 label
+        label = identity if identity else "Unknown"
+
+        # ✅ 얼굴 인식 결과를 log로 송출
         if identity:
+            socketio.emit('identified', {'user': identity}, namespace='/client')
             socketio.emit('log_message', f"✅ 얼굴 인식 완료: {identity}", namespace='/admin')
         else:
-            socketio.emit('log_message', "❌ 등록되지 않은 얼굴입니다", namespace='/admin')
+            socketio.emit('log_message', "❌ 등록된 얼굴 아님", namespace='/admin')
+
+        # ✅ 저장: 마지막 n초간 프레임 + bbox + label
+        save_face_clip(
+            frames=list(frame_queue),
+            bboxes=list(bbox_queue),
+            fps=video_fps,
+            identity=label,
+            filename="face_clip.mp4"
+        )
 
         stop_face_detection()
+
         break
 
 # ----------------------------- 시작 / 중단 이벤트 ----------------------------- #
