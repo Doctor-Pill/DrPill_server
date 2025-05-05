@@ -20,7 +20,6 @@ frame_lock = threading.Lock()
 video_seconds = 6
 video_fps = 10
 frame_queue = deque(maxlen=video_seconds * video_fps)
-bbox_queue = deque(maxlen=video_seconds * video_fps)
 
 # ----------------------------- 프레임 수신 ----------------------------- #
 @socketio.on('frame', namespace='/client')
@@ -36,10 +35,6 @@ def receive_frame(data):
     with frame_lock:
         latest_frame = frame
         frame_queue.append(frame.copy())
-        # 👇 이 부분 제거해보세요
-        # face_tracker.update(frame)
-        # bbox = face_tracker.get_last_bbox()
-        # bbox_queue.append(bbox if bbox else None)
 
 
 # ----------------------------- 얼굴 인식 스레드 ----------------------------- #
@@ -56,11 +51,6 @@ def face_detection_thread():
         face_tracker.update(frame_copy)
         bbox = face_tracker.get_last_bbox()
         frame = face_tracker.get_last_frame()
-
-        if bbox:
-            bbox_queue.append(bbox)
-        else:
-            bbox_queue.append(None)
 
         if bbox is None or frame is None:
             continue
@@ -87,7 +77,6 @@ def face_detection_thread():
         # ✅ 저장: 마지막 n초간 프레임 + bbox + label
         save_face_clip(
             frames=list(frame_queue),
-            bboxes=list(bbox_queue),
             fps=video_fps,
             identity=label,
             filename="face_clip.mp4"
