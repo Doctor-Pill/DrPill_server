@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dr.Pill 얼굴 인식 중</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #f2f8ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .loader {
+      border: 12px solid #e0f0ff;
+      border-top: 12px solid #29b6f6;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      animation: spin 1.2s linear infinite;
+      margin-bottom: 30px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .status-text {
+      font-size: 22px;
+      color: #007acc;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .sub-text {
+      font-size: 16px;
+      color: #333;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader"></div>
+  <div class="status-text">얼굴 인식 중입니다...</div>
+  <div class="sub-text">잠시만 기다려주세요</div>
+
+  <!-- SocketIO 리디렉션 처리 (필요 시) -->
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('redirect', (data) => {
+      console.log("🔁 redirect 수신:", data.url);
+      window.location.href = data.url;
+    });
+  </script>
+</body>
+</html>
