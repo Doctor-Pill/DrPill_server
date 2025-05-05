@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>복약 알림</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: left;
+    }
+
+    .time-badge {
+      display: inline-block;
+      background-color: #b3e5fc;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .main-text {
+      font-size: 38px;
+      font-weight: bold;
+      color: #29b6f6;
+      margin-bottom: 20px;
+    }
+
+    .sub-text {
+      font-size: 20px;
+      color: #000;
+    }
+
+    .sub-text strong {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="time-badge">현재 시각 08 : 00</div>
+    <div class="main-text">복약 시간입니다!</div>
+    <div class="sub-text">🔔 <strong>ooo</strong>님, 복약 준비를 시작해주세요.</div>
+  </div>
+
+  <!-- ✅ WebSocket 리디렉션 코드 포함 -->
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  <script>
+    const socket = io('/client');
+
+    socket.on('connect', () => {
+      console.log("✅ WebSocket 연결됨");
+    });
+
+    socket.on('redirect', (data) => {
+      console.log("🔁 서버로부터 전환 요청:", data.url);
+      window.location.href = data.url;
+    });
+  </script>
+</body>
+</html>

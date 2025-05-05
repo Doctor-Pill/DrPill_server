@@ -20,6 +20,11 @@ def admin():
 def client():
     return render_template('client.html')
 
+@app.route('/alert')
+def alert():
+    return render_template('alert.html')
+
+
 @socketio.on('connect', namespace='/client')
 def on_connect():
     print("✅ 클라이언트 연결됨 (/client)")

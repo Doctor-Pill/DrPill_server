@@ -17,7 +17,7 @@ def identify_face_from_bbox(frame, bbox):
         face_rgb = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
 
         result = DeepFace.find(
-            img_path=face_rgb,  # ✅ 여기만 수정
+            img_path=face_rgb,
             db_path="data/patients/face",
             model_name="Facenet512",
             detector_backend="retinaface",
