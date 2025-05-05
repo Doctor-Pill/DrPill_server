@@ -15,8 +15,12 @@
         <button onclick="sendCommand('start_usb_streaming')">📸 USB캠 스트리밍 시작</button>
         <button onclick="sendCommand('start_picam_streaming')">📸 PiCam 스트리밍 시작</button>
         <button onclick="sendCommand('stop_streaming')">🛑 스트리밍 중단</button>
+        <button onclick="callPatient()">📣 환자 호출</button>
         <button onclick="startFaceDetection()">🧑‍💻 얼굴 인식 시작</button> <!-- 추가 -->
         <button onclick="stopFaceDetection()">🙈 얼굴 인식 중단</button> <!-- 추가 -->
+        <button onclick="moveTo('/ready')">📣 엣지 /ready 이동</button>
+        <button onclick="moveTo('/alert')">⏰ 엣지 /alert 이동</button>
+        <button onclick="moveTo('/face')">📷 엣지 /face 이동</button>
     </div>
 
     <h2>📺 실시간 영상</h2>
@@ -30,6 +34,18 @@
         function sendCommand(command) {
             console.log(`➡️ 서버에 명령 전송: ${command}`);
             socket.emit('admin_command', {command});
+        }
+
+        function moveTo(path) {
+            console.log(`➡️ 엣지에 이동 명령 전송: ${path}`);
+            socket.emit('admin_command', {
+            command: `go:${path}`
+            });
+        }
+
+        function callPatient() {
+            console.log("📣 환자 호출 emit");
+            socket.emit('call_patient');  // 서버에 호출 요청
         }
 
         function startFaceDetection() {

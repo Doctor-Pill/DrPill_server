@@ -87,20 +87,5 @@
       <span class="indicator"></span>
     </div>
   </div>
-
-  <!-- ✅ WebSocket 리디렉션 코드 포함 -->
-  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-  <script>
-    const socket = io('/client');
-
-    socket.on('connect', () => {
-      console.log("✅ WebSocket 연결됨");
-    });
-
-    socket.on('redirect', (data) => {
-      console.log("🔁 서버로부터 전환 요청:", data.url);
-      window.location.href = data.url;
-    });
-  </script>
 </body>
 </html>

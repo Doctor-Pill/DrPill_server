@@ -16,13 +16,30 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 def admin():
     return render_template('admin.html')
 
+@app.route('/edge_base')
+def edge_base():
+    return render_template('edge_base.html')
+
 @app.route('/client')
 def client():
     return render_template('client.html')
 
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+@app.route('/ready')
+def ready():
+    return render_template('ready.html')
+
 @app.route('/alert')
 def alert():
     return render_template('alert.html')
+
+@app.route('/face')
+def face():
+    return render_template('face.html')
+
 
 
 @socketio.on('connect', namespace='/client')

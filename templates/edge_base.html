@@ -1,0 +1,38 @@
+<!-- templates/edge_base.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Dr.Pill Edge Base</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="view-frame" src="/home"></iframe>
+
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  <script>
+    const socket = io();  // 기본 namespace (/)
+    const frame = document.getElementById('view-frame');
+
+    socket.on('connect', () => {
+      console.log("✅ WebSocket 연결됨 (edge_base)");
+    });
+
+    socket.on('redirect', (data) => {
+      console.log("🔁 페이지 이동:", data.url);
+      frame.src = data.url;
+    });
+  </script>
+</body>
+</html>
