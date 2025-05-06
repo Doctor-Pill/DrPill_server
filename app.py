@@ -20,26 +20,25 @@ def admin():
 def edge_base():
     return render_template('edge_base.html')
 
-@app.route('/client')
-def client():
-    return render_template('client.html')
+@app.route('/face_alert')
+def face_alert():
+    return render_template('face_alert.html')
+
+@app.route('/face_waiting')
+def face_waiting():
+    return render_template('face_waiting.html')
+
+@app.route('/face_success')
+def face_success():
+    return render_template('face_success.html')
+
+@app.route('/face_fail')
+def face_fail():
+    return render_template('face_fail.html')
 
 @app.route('/home')
 def home():
     return render_template('home.html')
-
-@app.route('/ready')
-def ready():
-    return render_template('ready.html')
-
-@app.route('/alert')
-def alert():
-    return render_template('alert.html')
-
-@app.route('/face')
-def face():
-    return render_template('face.html')
-
 
 
 @socketio.on('connect', namespace='/client')

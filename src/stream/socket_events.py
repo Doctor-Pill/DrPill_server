@@ -4,6 +4,8 @@ from flask import request
 from flask_socketio import emit
 from server.frame_handler import face_detection_thread
 
+servo_state = {"enabled": False}  # 전역 상태 저장 (선택)
+
 def register_socket_events(socketio):
     from src.receiver.stream_receiver import start_stream_receiver, stop_stream_receiver
 
@@ -33,6 +35,14 @@ def register_socket_events(socketio):
     def on_ready_ack():
         print(f"✅ 클라이언트 도착 확인: {request.sid}")
         emit('redirect', {'url': '/face'}, to=request.sid)
+
+    @socketio.on('toggle_servo', namespace='/admin')
+    def on_toggle_servo(data):
+        enabled = data.get("enabled", False)
+        servo_state["enabled"] = enabled
+        print(f"🔧 서보모터 활성화 여부: {enabled}")
+        emit("toggle_servo", {"enabled": enabled}, broadcast=True)  # → 엣지에 전달
+
 
     @socketio.on('usb_streaming_ready')
     def handle_usb_ready():

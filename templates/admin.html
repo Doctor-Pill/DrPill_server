@@ -15,12 +15,15 @@
         <button onclick="sendCommand('start_usb_streaming')">📸 USB캠 스트리밍 시작</button>
         <button onclick="sendCommand('start_picam_streaming')">📸 PiCam 스트리밍 시작</button>
         <button onclick="sendCommand('stop_streaming')">🛑 스트리밍 중단</button>
+        <button onclick="sendCommand('operate_servo')">모터 동작</button>
         <button onclick="callPatient()">📣 환자 호출</button>
         <button onclick="startFaceDetection()">🧑‍💻 얼굴 인식 시작</button> <!-- 추가 -->
         <button onclick="stopFaceDetection()">🙈 얼굴 인식 중단</button> <!-- 추가 -->
-        <button onclick="moveTo('/ready')">📣 엣지 /ready 이동</button>
-        <button onclick="moveTo('/alert')">⏰ 엣지 /alert 이동</button>
-        <button onclick="moveTo('/face')">📷 엣지 /face 이동</button>
+        <button onclick="moveTo('/home')">📣 엣지 /home 이동</button>
+        <button onclick="moveTo('/face_alert')">📣 엣지 /face_alert 이동</button>
+        <button onclick="moveTo('/face_waiting')">📣 엣지 /face_waiting 이동</button>
+        <button onclick="moveTo('/face_fail')">📣 엣지 /face_fail 이동</button>
+        <button onclick="moveTo('/face_success')">📣 엣지 /face_success 이동</button>
     </div>
 
     <h2>📺 실시간 영상</h2>
@@ -41,6 +44,11 @@
             socket.emit('admin_command', {
             command: `go:${path}`
             });
+        }
+
+        function toggleServo(state) {
+            socket.emit("operate_servo", { enabled: state });
+            console.log("🛰️ 서보모터 동작");
         }
 
         function callPatient() {
